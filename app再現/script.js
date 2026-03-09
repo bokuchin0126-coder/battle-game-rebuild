@@ -1,4 +1,5 @@
 const playerHP = document.getElementById("playerHP");
+const playerMaxHP = document.getElementById("playerMaxHP");
 const playerBar = document.getElementById("player-hp-bar");
 const defeat = document.getElementById("defeat");
 const playerLevel = document.getElementById("playerLevel");
@@ -6,6 +7,7 @@ const exp = document.getElementById("exp");
 const enemyName = document.getElementById("enemyName");
 const attack = document.getElementById("attack");
 const enemyHP = document.getElementById("enemyHP");
+const enemyMaxHP = document.getElementById("enemyMaxHP");
 const enemyBar = document.getElementById("enemy-hp-bar");
 
 let state = {
@@ -13,18 +15,20 @@ let state = {
         id: 1,
         name: "ヒーロー",
         attack: 40,
-        hp: 300,
-        maxHP: 300,
+        hp: 500,
+        maxHP: 500,
         exp: 0,
         level: 1,
-        defeat: -1,
+        defeat: 0,
     },
     {
         id: 2,
+        pokemonId: 0,
         name: "enemy",
         attack: 0,
         hp: 10,
-        maxHP: 10
+        maxHP: 10,
+        ability: null
     }],
     turn: 0,
     logs: [],
@@ -37,6 +41,7 @@ async function getPokemon() {
     const data = await res.json();
 
     return {
+        id: id,
         name: data.name,
         hp: data.stats[0].base_stat,
         attack: data.stats[1].base_stat,
@@ -90,7 +95,7 @@ async function levelUP(state) {
                 return {
                     ...p,
                     attack: p.attack + 7,
-                    hp: p.hp + 40,
+                    maxHP: p.maxHP + 50,
                     exp: p.exp - 100,
                     level: p.level + 1
                 };
@@ -115,9 +120,11 @@ async function spawnEnemy(state) {
                     return {
                         ...p,
                         name: pokemon.name,
-                        hp: pokemon.hp * 2,
-                        maxHP: pokemon.hp * 2,
-                        attack: pokemon.attack / 3
+                        pokemonId: pokemon.id,
+                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 5),
+                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 5),
+                        attack: pokemon.attack / 3,
+                        ability: "heal"
                     };
                 }
                 return p;
@@ -126,6 +133,24 @@ async function spawnEnemy(state) {
         return await addLog(newStates, `${newStates.players[1].name}が出現！`);
     }
     return state;
+}
+
+function healing (state, targetId, amout) {
+    const target = state.players.find(p => p.id === targetId);
+    const newStates = {
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === targetId) {
+                return {
+                    ...p,
+                    hp: Math.min(p.hp + amout, p.maxHP),
+                    ability: null
+                };
+            }
+            return p;
+        })
+    };
+    return addLog(newStates, `${target.name}がHPを${amout}回復した！`);
 }
 
 async function playerAction(state) {
@@ -139,8 +164,10 @@ async function playerAction(state) {
 
 async function enemyAction(state) {
     let newState = state;
+    const enemy = newState.players.find(p => p.id === 2);
     newState = await spawnEnemy(newState);
-    newState = await attackShock(newState, 2, 1, Math.floor(newState.players[1].attack));
+    if (enemy.hp <= 100 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
+    newState = await attackShock(newState, 2, 1, Math.floor(enemy.attack));
 
     return newState;
 }
@@ -180,16 +207,20 @@ async function addLog(state, message) {
 }
 
 function textChange() {
-    const playerPercent = (state.players[0].hp / state.players[0].maxHP) * 100;
-    const enemyPercent = (state.players[1].hp / state.players[1].maxHP) * 100;
+    const player = state.players.find(p => p.id === 1);
+    const enemy = state.players.find(p => p.id === 2);
+    const playerPercent = Math.max(0, (player.hp / player.maxHP) * 100);
+    const enemyPercent = Math.max(0, (enemy.hp / enemy.maxHP) * 100);
     playerBar.style.width = playerPercent  + "%";
     enemyBar.style.width = enemyPercent + "%";
-    playerHP.textContent = state.players[0].hp;
-    defeat.textContent = state.players[0].defeat;
-    playerLevel.textContent = state.players[0].level;
-    exp.textContent = state.players[0].exp;
-    enemyHP.textContent = state.players[1].hp;
-    enemyName.textContent = state.players[1].name;
+    playerHP.textContent = player.hp;
+    playerMaxHP.textContent = player.maxHP;
+    defeat.textContent = player.defeat;
+    playerLevel.textContent = player.level;
+    exp.textContent = player.exp;
+    enemyHP.textContent = enemy.hp;
+    enemyMaxHP.textContent = enemy.maxHP;
+    enemyName.textContent = enemy.name;
 }
 
 async function playerTurn() {
