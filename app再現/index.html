@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>再現してみたよ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+        <h2>プレイヤー</h2>
+    <div class="playerLise">
+        <h4>レベル<span id="playerLevel">1</span></h4>
+        <p>経験値<span id="exp">0</span></p>
+    </div>
+    <p>撃破数<span id="defeat">0</span></p>
+    <div class="hp-container">
+        <div id="player-hp-bar" class="hp-bar"></div>
+    </div>
+    <p>HP: <span id="playerHP">300</span>/300</p>
+    <button id="attack">攻撃</button>
+    <hr>
+    <h2 id="enemyName"></h2>
+    <img id="enemyImg">
+    <div class="hp-container">
+        <div id="enemy-hp-bar" class="hp-bar"></div>
+    </div>
+    <p>HP: <span id="enemyHP">10</span>/10</p>
+    <div id="log"></div>
+</body>
+</html>
