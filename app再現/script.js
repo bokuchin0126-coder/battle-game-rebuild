@@ -28,6 +28,7 @@ let state = {
         attack: 0,
         hp: 10,
         maxHP: 10,
+        level: 1,
         ability: null
     }],
     turn: 0,
@@ -54,7 +55,7 @@ async function attackShock(state, attackerId, targetId, damage) {
     const target = state.players.find(p => p.id === targetId);
     const criticalDamage = damage * 2;
 
-    const ifState  = {
+    const ifStates  = {
         ...state,
         players: state.players.map(p => {
             if (targetId === p.id) {
@@ -66,7 +67,7 @@ async function attackShock(state, attackerId, targetId, damage) {
             return p;
         })
     };
-    if (Math.random() < 0.2) return await addLog(ifState, `${attaker.name}の攻撃!${target.name}に${criticalDamage}ダメージ!`)
+    if (Math.random() < 0.2) return await addLog(ifStates, `${attaker.name}の攻撃!${target.name}に${criticalDamage}ダメージ!`)
 
     const newStates = {
         ...state,
@@ -103,7 +104,7 @@ async function defeatRewards(state) {
     return state;
 }
 
-async function levelUP(state) {
+async function playerLevelUP(state) {
     const newStates = {
         ...state,
         players: state.players.map(p => {
@@ -140,13 +141,14 @@ async function spawnEnemy(state) {
                         hp: (pokemon.hp * 2) + (state.players[0].defeat * 5),
                         maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 5),
                         attack: pokemon.attack / 3,
+                        level: Math.floor(state.players[0].defeat / 3) + 1,
                         ability: "heal"
                     };
                 }
                 return p;
             })
         };
-        return await addLog(newStates, `${newStates.players[1].name}が出現！`);
+        return await addLog(newStates, `Lv. ${newStates.players[1].level}の${newStates.players[1].name}が出現！`);
     }
     return state;
 }
@@ -173,7 +175,7 @@ async function playerAction(state) {
     let newState = state;
     newState = await attackShock(newState, 1, 2, newState.players[0].attack);
     newState = await defeatRewards(newState);
-    newState = await levelUP(newState);
+    newState = await playerLevelUP(newState);
 
     return newState;
 }
