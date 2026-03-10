@@ -5,6 +5,7 @@ const defeat = document.getElementById("defeat");
 const playerLevel = document.getElementById("playerLevel");
 const exp = document.getElementById("exp");
 const enemyName = document.getElementById("enemyName");
+const enemyLevel = document.getElementById("enemyLevel");
 const attack = document.getElementById("attack");
 const enemyHP = document.getElementById("enemyHP");
 const enemyMaxHP = document.getElementById("enemyMaxHP");
@@ -14,8 +15,8 @@ let state = {
     players:[{
         id: 1,
         name: "ヒーロー",
-        attack: 40,
-        hp: 500,
+        attack: 4000,
+        hp: 5000,
         maxHP: 500,
         exp: 0,
         level: 1,
@@ -36,8 +37,11 @@ let state = {
     phase: "player"
 };
 
-async function getPokemon() {
-    const id = Math.floor(Math.random() * 151) + 1;
+async function getPokemon(id) {
+    if (!id) {
+        id =  Math.floor(Math.random() * 100) + 1;
+    }
+
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
     const data = await res.json();
 
@@ -153,6 +157,84 @@ async function spawnEnemy(state) {
     return state;
 }
 
+async function boss(state) {
+    const player = state.players.find(p => p.id === 1);
+    let pokemon = await getPokemon();
+
+    if (player.defeat === 10) pokemon = await getPokemon(130);
+
+    if (player.defeat === 20) pokemon = await getPokemon(146);
+
+    if (player.defeat === 30) pokemon = await getPokemon(150);
+
+    document.getElementById("enemyImg").src = pokemon.img;
+
+    const firstBoss = {
+            ...state,
+            players: state.players.map(p => {
+                if (p.id === 2){
+                    return {
+                        ...p,
+                        name: pokemon.name,
+                        pokemonId: pokemon.id,
+                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 10),
+                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 10),
+                        attack: pokemon.attack / 3,
+                        level: 5,
+                        ability: "heal"
+                    };
+                }
+                return p;
+            })
+    };
+
+    const middleBoss = {
+        ...state,
+            players: state.players.map(p => {
+                if (p.id === 2){
+                    return {
+                        ...p,
+                        name: pokemon.name,
+                        pokemonId: pokemon.id,
+                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 15),
+                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 15),
+                        attack: pokemon.attack / 2,
+                        level: 10,
+                        ability: "heal"
+                    };
+                }
+                return p;
+            })
+    };
+
+    const lastBoss = {
+        ...state,
+            players: state.players.map(p => {
+                if (p.id === 2){
+                    return {
+                        ...p,
+                        name: pokemon.name,
+                        pokemonId: pokemon.id,
+                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 20),
+                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 20),
+                        attack: pokemon.attack,
+                        level: 15,
+                        ability: "heal"
+                    };
+                }
+                return p;
+            })
+    };
+
+    if(player.defeat === 10 ) return await addLog(firstBoss, `\u{1F525}ボス出現！ Lv.${firstBoss.players[1].level} ${firstBoss.players[1].name}`);
+
+    if(player.defeat === 20 ) return await addLog(middleBoss, `\u{1F525}ボス出現！ Lv.${middleBoss.players[1].level} ${middle.players[1].name}`);
+    
+    if(player.defeat === 30 ) return await addLog(lastBoss, `\u{1F525}ボス出現！ Lv.${lastBoss.players[1].level} ${lastBoss.players[1].name}`);
+
+    return state;
+}
+
 function healing (state, targetId, amout) {
     const target = state.players.find(p => p.id === targetId);
     const newStates = {
@@ -183,6 +265,7 @@ async function playerAction(state) {
 async function enemyAction(state) {
     let newState = state;
     const enemy = newState.players.find(p => p.id === 2);
+    if (newState.players[0].defeat !== 0 && newState.players[0].defeat % 10 === 0) return newState = await boss(newState);
     newState = await spawnEnemy(newState);
     if (enemy.hp <= 100 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
     newState = await attackShock(newState, 2, 1, Math.floor(enemy.attack));
@@ -237,6 +320,7 @@ function textChange() {
     playerLevel.textContent = player.level;
     exp.textContent = player.exp;
     enemyHP.textContent = enemy.hp;
+    enemyLevel.textContent = enemy.level;
     enemyMaxHP.textContent = enemy.maxHP;
     enemyName.textContent = enemy.name;
 }
