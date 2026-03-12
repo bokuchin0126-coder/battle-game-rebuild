@@ -1,0 +1,22 @@
+.playerLise{
+   display: flex;
+   align-items: baseline;
+   gap: 20px
+}
+
+.hp-container {
+   width: 200px;
+   height: 20px;
+   background-color: #eee;
+   border: 2px solid #333;
+   border-radius: 10px;
+   overflow: hidden;
+   margin-bottom: 5px;
+}
+
+.hp-bar {
+   height: 100%;
+   width: 100%;
+   background-color: #4caf50;
+   transition: width 0.3s ease;   
+}
