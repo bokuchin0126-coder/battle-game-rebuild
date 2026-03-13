@@ -10,13 +10,14 @@ const attack = document.getElementById("attack");
 const enemyHP = document.getElementById("enemyHP");
 const enemyMaxHP = document.getElementById("enemyMaxHP");
 const enemyBar = document.getElementById("enemy-hp-bar");
+const stateButton = document.getElementById("stateScreen");
 
 let state = {
     players:[{
         id: 1,
         name: "ヒーロー",
         attack: 60,
-        hp: 800,
+        hp: 8,
         maxHP: 800,
         exp: 0,
         level: 1,
@@ -34,7 +35,8 @@ let state = {
     }],
     turn: 0,
     logs: [],
-    phase: "player"
+    phase: "player",
+    isGameOver: false
 };
 
 async function getPokemon(id) {
@@ -256,6 +258,7 @@ function healing (state, targetId, amout) {
 }
 
 async function playerAction(state) {
+    if (state.isGameOver) return;
     let newState = state;
     newState = await attackShock(newState, 1, 2, newState.players[0].attack);
     newState = await defeatRewards(newState);
@@ -265,6 +268,7 @@ async function playerAction(state) {
 }
 
 async function enemyAction(state) {
+    if (state.isGameOver) return;
     let newState = state;
     const player = newState.players.find(p => p.id === 1);
     const enemy = newState.players.find(p => p.id === 2);
@@ -311,11 +315,17 @@ async function addLog(state, message) {
 }
 
 function gameClear() {
+    state.isGameOver = true;
     document.getElementById("gameClear").style.display = "block"
 }
 
 function gameOver() {
     document.getElementById("gameOverScreen").style.display = "block";
+}
+
+function gameState() {
+    document.getElementById("stateScreen").style.display = "none";
+    document.getElementById("gameScreen").style.display = "block";
 }
 
 function textChange() {
@@ -355,13 +365,25 @@ function wait(ms) {
 }
 
 function setState(newState) {
-    const player = state.players.find(p => p.id === 1);
     state = newState;
-    if (player.hp <= 0) gameOver();
-    if (player.defeat === 30) gameClear();
+    const player = state.players.find(p => p.id === 1);
     textChange();
+    if (player.hp <= 0) {
+        gameOver(); 
+        return;
+    }
+    if (player.defeat === 30) {
+        gameClear();
+        return;
+    }
+
+    if (state.isGameOver) return;
 }
 
 attack.addEventListener('click', () => {
     playerTurn();
+});
+
+stateButton.addEventListener('click', () => {
+    gameState();
 });

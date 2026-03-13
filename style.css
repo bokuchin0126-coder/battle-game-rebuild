@@ -20,3 +20,16 @@
    background-color: #4caf50;
    transition: width 0.3s ease;   
 }
+
+#stateScreen{
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   height: 100vh;
+   gap: 25px;
+}
+
+#gameScreen{
+   display: none;
+}
