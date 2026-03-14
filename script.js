@@ -17,7 +17,7 @@ let state = {
         id: 1,
         name: "ヒーロー",
         attack: 60,
-        hp: 8,
+        hp: 800,
         maxHP: 800,
         exp: 0,
         level: 1,
@@ -272,9 +272,12 @@ async function enemyAction(state) {
     let newState = state;
     const player = newState.players.find(p => p.id === 1);
     const enemy = newState.players.find(p => p.id === 2);
+    if (enemy.hp <= 0) {
+        await wait(200)
+    }
+    if (enemy.hp <= 100 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
     if (player.defeat !== 0 && player.defeat % 10 === 0) newState = await boss(newState);
     if (player.defeat % 10 !== 0) newState = await spawnEnemy(newState);
-    if (enemy.hp <= 100 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
     newState = await attackShock(newState, 2, 1, Math.floor(enemy.attack));
 
     return newState;
@@ -299,17 +302,22 @@ async function nextPhase(state) {
     }
 }
 
-function textReflection(state, logsArea, message) {
-    const p = document.createElement('div');
+function textReflection(state, p, logsArea, message) {
     p.textContent = `[ターン${state.turn}]${message}`;
     logsArea.appendChild(p);
+    logsArea.scrollTop = logsArea.scrollHeight;
 }
 
 async function addLog(state, message) {
+   const p = document.createElement('div');
    const logsArea = document.getElementById("log");
-
-   logsArea.innerHTML = "";
-   textReflection(state, logsArea, message);
+   p.dataset.turn = state.turn;
+   if (logsArea.lastElementChild && logsArea.lastElementChild.dataset.turn != state.turn) {
+    logsArea.innerHTML = "";
+   }
+   
+   
+   textReflection(state, p, logsArea, message);
    await wait(300)
    return state;
 }
