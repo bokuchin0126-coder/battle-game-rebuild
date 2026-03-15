@@ -2,6 +2,10 @@
 
 javaScriptで作ったターン制バトルゲーム
 
+## Demo
+
+![game screen](screenshot.png)
+
 ## 機能
 ・ランダムポケモン生成（PokeAPI）
 ・ターン制バトル
