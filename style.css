@@ -21,6 +21,17 @@
    transition: width 0.3s ease;   
 }
 
+#button button{
+   width: 85px;
+   height: 30px;
+   box-sizing: border-box;
+}
+
+#button {
+   display: flex;
+   gap: 50px;
+}
+
 #stateScreen{
    display: flex;
    flex-direction: column;

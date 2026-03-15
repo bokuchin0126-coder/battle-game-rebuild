@@ -24,10 +24,24 @@
         <div id="player-hp-bar" class="hp-bar"></div>
     </div>
     <p>HP: <span id="playerHP">500</span>/<span id="playerMaxHP">500</span></p>
-    <button id="attack">攻撃</button>
+    <div id="button">
+        <div id="attackBox">
+            <button id="attack">攻撃</button>
+            <p>攻撃力<span id="playerAttackValue">60</span></p>
+        </div>
+        <div id="potionFrame">
+            <button id="potion">ポーション</button>
+            <P>ポーション×<span id="potionStock">0</span></P>
+        </div>
+        <div id="powerBeansFrame">
+            <button id="powerBeans">力の豆</button>
+            <p>力の豆×<span id="powerBeansStock">0</span></p>
+        </div>
+    </div>
     <hr>
     <h2 id="enemyName"></h2>
     <h4>Lv. <span id="enemyLevel">1</span></h4>
+    <p>攻撃力<span id="enemyAttackValue">0</span></p>
     <img id="enemyImg">
     <div class="hp-container">
         <div id="enemy-hp-bar" class="hp-bar"></div>

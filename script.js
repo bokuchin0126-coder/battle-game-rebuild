@@ -1,6 +1,7 @@
 const playerHP = document.getElementById("playerHP");
 const playerMaxHP = document.getElementById("playerMaxHP");
 const playerBar = document.getElementById("player-hp-bar");
+const playerAttackValue = document.getElementById("playerAttackValue");
 const defeat = document.getElementById("defeat");
 const playerLevel = document.getElementById("playerLevel");
 const exp = document.getElementById("exp");
@@ -10,7 +11,12 @@ const attack = document.getElementById("attack");
 const enemyHP = document.getElementById("enemyHP");
 const enemyMaxHP = document.getElementById("enemyMaxHP");
 const enemyBar = document.getElementById("enemy-hp-bar");
+const enemyAttackValue = document.getElementById("enemyAttackValue");
 const stateButton = document.getElementById("stateScreen");
+const potion = document.getElementById("potion");
+const powerBeans= document.getElementById("powerBeans");
+const potionStock = document.getElementById("potionStock");
+const powerBeansStock = document.getElementById("powerBeansStock");
 
 let state = {
     players:[{
@@ -22,6 +28,7 @@ let state = {
         exp: 0,
         level: 1,
         defeat: 0,
+        item: {potion: 0, powerBeans: 0}
     },
     {
         id: 2,
@@ -73,7 +80,7 @@ async function attackShock(state, attackerId, targetId, damage) {
             return p;
         })
     };
-    if (Math.random() < 0.2) return await addLog(ifStates, `${attaker.name}の攻撃!${target.name}に${criticalDamage}ダメージ!`)
+    if (Math.random() < 0.2) return await addLog(ifStates, `${attaker.name}の強攻撃!${target.name}に${criticalDamage}ダメージ!`)
 
     const newStates = {
         ...state,
@@ -133,6 +140,8 @@ async function playerLevelUP(state) {
     return state;
 }
 
+
+
 async function spawnEnemy(state) {
     if (state.players[1].hp <= 0) {
         const pokemon = await getPokemon();
@@ -156,6 +165,96 @@ async function spawnEnemy(state) {
             })
         };
         return await addLog(newStates, `Lv. ${newStates.players[1].level}の${newStates.players[1].name}が出現！`);
+    }
+    return state;
+}
+
+async function item(state) {
+    const player = state.players.find(p => p.id === 1);
+    if (player.defeat % 10 === 0) {
+        const potion = {
+            ...state,
+            players: state.players.map(p => {
+                if (p.id === 1) { 
+                    return {
+                        ...p,
+                        item: {
+                            ...p.item,
+                            potion: p.item.potion + 1
+                        }
+                    };
+                }
+            return p;
+            })
+        };
+        return await addLog(potion, `ポーションをゲットしました`);
+    }
+
+    if (player.defeat % 5 === 0) {
+        const powerBeans = {
+            ...state,
+            players: state.players.map(p => {
+                if (p.id === 1) {
+                    return {
+                        ...p,
+                        item: {
+                            ...p.item,
+                            powerBeans: p.item.powerBeans + 1,
+                        }
+                    };
+                }
+                return p;
+            })
+        };
+        return await addLog(powerBeans, `力の豆をゲットしました`);
+    }
+    return state;
+}
+
+async function usePotion(state) {
+    const player = state.players.find(p => p.id === 1);
+    const newStates = {
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === 1) {
+                return {
+                    ...p,
+                    hp: Math.min(p.maxHP, p.hp + (150 + p.level * 30)),
+                    item: {
+                        ...p.item,
+                        potion: p.item.potion - 1
+                    }
+                };
+            }
+            return p;
+        })
+    };
+    if (player.item.potion >= 1) {
+        return await addLog(newStates, `${player.name}がポーションを使用した！ ${player.name}のHPが${150 + player.level * 30}回復しました。`);
+    }
+    return state;
+}
+
+async function usePowerBeans(state) {
+    const player = state.players.find(p => p.id === 1);
+    const newStates = {
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === 1) {
+                return {
+                    ...p,
+                    attack: p.attack + (15 + p.level * 5),
+                    item: {
+                        ...p.item,
+                        powerBeans: p.item.powerBeans - 1,
+                    }
+                };
+            }
+            return p;
+        })
+    };
+    if (player.item.powerBeans >= 1) {
+        return await addLog(newStates, `${player.name}が力の豆を使用した！ ${player.name}の攻撃力が${40 + player.level * 15}上がりました。`);
     }
     return state;
 }
@@ -263,6 +362,7 @@ async function playerAction(state) {
     newState = await attackShock(newState, 1, 2, newState.players[0].attack);
     newState = await defeatRewards(newState);
     newState = await playerLevelUP(newState);
+    newState = await item(newState);
 
     return newState;
 }
@@ -345,13 +445,17 @@ function textChange() {
     enemyBar.style.width = enemyPercent + "%";
     playerHP.textContent = player.hp;
     playerMaxHP.textContent = player.maxHP;
+    playerAttackValue.textContent = Math.floor(player.attack);
     defeat.textContent = player.defeat;
     playerLevel.textContent = player.level;
     exp.textContent = player.exp;
     enemyHP.textContent = enemy.hp;
     enemyLevel.textContent = enemy.level;
     enemyMaxHP.textContent = enemy.maxHP;
+    enemyAttackValue.textContent = Math.floor(enemy.attack);
     enemyName.textContent = enemy.name;
+    potionStock.textContent = player.item.potion;
+    powerBeansStock.textContent = player.item.powerBeans;
 }
 
 async function playerTurn() {
@@ -391,6 +495,16 @@ function setState(newState) {
 attack.addEventListener('click', () => {
     playerTurn();
 });
+
+potion.addEventListener('click', async () => {
+    if (state.players[0].item.potion <= 0) return;
+    setState(await usePotion(state));
+});
+
+powerBeans.addEventListener('click', async () => {
+    if (state.players[0].item.powerBeans <= 0) return;
+    setState(await usePowerBeans(state));
+})
 
 stateButton.addEventListener('click', () => {
     gameState();
