@@ -2,6 +2,9 @@
 
 javaScriptで作ったターン制バトルゲーム
 
+## Play Game
+https://bokuchin0126-coder.github.io/battle-game-rebuild/
+
 ## Demo
 
 ![game screen](screenshot.png)
@@ -27,6 +30,3 @@ javaScriptで作ったターン制バトルゲーム
 ・レベルアップでHPを攻撃力が上昇
 ・一定撃破数でアイテム取得
 ・30体倒すとゲームクリア
-
-## プレイ方法
-index.htmlを開く
