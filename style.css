@@ -46,6 +46,7 @@
    display: none;
    justify-content: space-between;
    width: 700px;
+   gap: 20px;
 }
 
 #log {

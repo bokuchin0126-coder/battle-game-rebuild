@@ -28,6 +28,8 @@ let state = {
         exp: 0,
         level: 1,
         defeat: 0,
+        bossDefeat: false,
+        itemDefeat: 0,
         item: {potion: 0, powerBeans: 0}
     },
     {
@@ -48,7 +50,7 @@ let state = {
 
 async function getPokemon(id) {
     if (!id) {
-        id =  Math.floor(Math.random() * 100) + 1;
+        id =  Math.floor(Math.random() * 50) + 1;
     }
 
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
@@ -117,6 +119,43 @@ async function defeatRewards(state) {
     return state;
 }
 
+async function bossDefeatRewards(state) {
+    const player = state.players.find(p => p.id === 1);
+
+    if (player.defeat > 10 && player.defeat % 10 === 2) {
+        return {
+            ...state,
+            players: state.players.map(p => {
+            if (p.id === 1) {
+                return {
+                    ...p,
+                    bossDefeat: false
+                };
+            }
+            return p;
+            })
+        };
+    }
+
+    const newStates = {
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === 1) {
+                return {
+                    ...p,
+                    hp: p.maxHP - 200,
+                    bossDefeat: true
+                };
+            }
+            return p;
+        })
+    };
+    if (player.defeat >= 10 && player.defeat % 10 === 1 && !player.bossDefeat) {
+        return addLog(newStates, `ボス討伐報酬で、${player.name}のHPが${player.maxHP - 200}まで回復した！`);
+    }
+    return state;
+}
+
 async function playerLevelUP(state) {
     const newStates = {
         ...state,
@@ -124,9 +163,9 @@ async function playerLevelUP(state) {
             if (p.id === 1 && p.exp === 100) {
                 return {
                     ...p,
-                    attack: p.attack + 7,
-                    hp: Math.min(p.hp + 50, p.maxHP),
-                    maxHP: p.maxHP + 50,
+                    attack: p.attack + 5,
+                    hp: Math.min(p.hp + (50 + p.defeat * 2), p.maxHP),
+                    maxHP: p.maxHP + (50 + p.defeat * 2),
                     exp: p.exp - 100,
                     level: p.level + 1
                 };
@@ -134,7 +173,7 @@ async function playerLevelUP(state) {
             return p;
         })
     };
-    if (state.players[1].hp <= 0) {
+    if (state.players[1].hp <= 0 && state.players[0].exp > 50) {
         return await addLog(newStates, `${newStates.players[0].name}のレベルが1上がりました!`);
     }
     return state;
@@ -152,9 +191,9 @@ async function spawnEnemy(state) {
                         ...p,
                         name: pokemon.name,
                         pokemonId: pokemon.id,
-                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 5),
-                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 5),
-                        attack: pokemon.attack / 3,
+                        hp: (pokemon.hp * 2) + (p.level * 60),
+                        maxHP: (pokemon.hp * 2) + (p.level * 60),
+                        attack: (pokemon.attack / 3) + (p.level * 5),
                         level: Math.floor(state.players[0].defeat / 3) + 1,
                         ability: "heal"
                     };
@@ -162,20 +201,23 @@ async function spawnEnemy(state) {
                 return p;
             })
         };
-        return await addLog(newStates, `Lv. ${newStates.players[1].level}の${newStates.players[1].name}が出現！`);
+        const enemy = newStates.players.find(p => p.id === 2);
+
+        return await addLog(newStates, `Lv. ${enemy.level}の${enemy.name}が出現！`);
     }
     return state;
 }
 
 async function item(state) {
     const player = state.players.find(p => p.id === 1);
-    if (player.defeat % 10 === 0 && player.defeat >= 1) {
+    if (player.defeat % 10 === 0 && player.defeat >= 1 && player.itemDefeat !== player.defeat) {
         const potion = {
             ...state,
             players: state.players.map(p => {
                 if (p.id === 1) { 
                     return {
                         ...p,
+                        itemDefeat: p.defeat,
                         item: {
                             ...p.item,
                             potion: p.item.potion + 1
@@ -188,13 +230,14 @@ async function item(state) {
         return await addLog(potion, `ポーションをゲットしました`);
     }
 
-    if (player.defeat % 5 === 0) {
+    if (player.defeat % 5 === 0 && player.defeat >= 1 && player.itemDefeat !== player.defeat) {
         const powerBeans = {
             ...state,
             players: state.players.map(p => {
                 if (p.id === 1) {
                     return {
                         ...p,
+                        itemDefeat: p.defeat,
                         item: {
                             ...p.item,
                             powerBeans: p.item.powerBeans + 1,
@@ -217,7 +260,7 @@ async function usePotion(state) {
             if (p.id === 1) {
                 return {
                     ...p,
-                    hp: Math.min(p.maxHP, p.hp + (150 + p.level * 30)),
+                    hp: Math.min(p.maxHP, p.hp + (200 + p.level * 30)),
                     item: {
                         ...p.item,
                         potion: p.item.potion - 1
@@ -252,7 +295,7 @@ async function usePowerBeans(state) {
         })
     };
     if (player.item.powerBeans >= 1) {
-        return await addLog(newStates, `${player.name}が力の豆を使用した！ ${player.name}の攻撃力が${40 + player.level * 15}上がりました。`);
+        return await addLog(newStates, `${player.name}が力の豆を使用した！ ${player.name}の攻撃力が${10 + player.level * 3}上がりました。`);
     }
     return state;
 }
@@ -278,8 +321,8 @@ async function boss(state) {
                         ...p,
                         name: pokemon.name,
                         pokemonId: pokemon.id,
-                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 10),
-                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 10),
+                        hp: (pokemon.hp * 2) + (5 * 60),
+                        maxHP: (pokemon.hp * 2) + (5 * 60),
                         attack: pokemon.attack / 3,
                         level: 5,
                         ability: "heal"
@@ -297,8 +340,8 @@ async function boss(state) {
                         ...p,
                         name: pokemon.name,
                         pokemonId: pokemon.id,
-                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 15),
-                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 15),
+                        hp: (pokemon.hp * 3) + (10 * 90),
+                        maxHP: (pokemon.hp * 3) + (10 * 90),
                         attack: pokemon.attack / 2,
                         level: 10,
                         ability: "heal"
@@ -316,8 +359,8 @@ async function boss(state) {
                         ...p,
                         name: pokemon.name,
                         pokemonId: pokemon.id,
-                        hp: (pokemon.hp * 2) + (state.players[0].defeat * 20),
-                        maxHP: (pokemon.hp * 2) + (state.players[0].defeat * 20),
+                        hp: (pokemon.hp * 4) + (15 * 120),
+                        maxHP: (pokemon.hp * 4) + (15 * 120),
                         attack: pokemon.attack,
                         level: 15,
                         ability: "heal"
@@ -359,6 +402,7 @@ async function playerAction(state) {
     let newState = state;
     newState = await attackShock(newState, 1, 2, newState.players[0].attack);
     newState = await defeatRewards(newState);
+    newState = await bossDefeatRewards(newState);
     newState = await playerLevelUP(newState);
     newState = await item(newState);
 
@@ -373,7 +417,7 @@ async function enemyAction(state) {
     if (enemy.hp <= 0) {
         await wait(200)
     }
-    if (enemy.hp <= 100 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
+    if (enemy.hp <= 100 && enemy.hp >= 1 && enemy.ability === "heal") return newState = healing(newState, 2, 40);
     if (player.defeat !== 0 && player.defeat % 10 === 0) newState = await boss(newState);
     if (player.defeat % 10 !== 0) newState = await spawnEnemy(newState);
     newState = await attackShock(newState, 2, 1, Math.floor(enemy.attack));
@@ -482,7 +526,7 @@ function setState(newState) {
         gameOver(); 
         return;
     }
-    if (player.defeat === 30) {
+    if (player.defeat === 31) {
         gameClear();
         return;
     }
