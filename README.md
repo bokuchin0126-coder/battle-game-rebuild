@@ -9,6 +9,13 @@ https://bokuchin0126-coder.github.io/battle-game-rebuild/
 
 ![game screen](screenshot.png.png)
 
+## Game Features
+・Turn based battle system
+・Random Pokemon generation (PokeAPI)
+・Level up system
+・Boss battle (10 / 20 / 30 defeats)
+・Item system (HealPotion / Power Beans)
+
 ## 機能
 ・ランダムポケモン生成（PokeAPI）
 ・ターン制バトル
