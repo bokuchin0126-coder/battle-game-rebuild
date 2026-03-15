@@ -7,7 +7,7 @@ https://bokuchin0126-coder.github.io/battle-game-rebuild/
 
 ## Demo
 
-![game screen](screenshot.png)
+![game screen](screenshot.png.png)
 
 ## 機能
 ・ランダムポケモン生成（PokeAPI）
