@@ -30,6 +30,7 @@
 #button {
    display: flex;
    gap: 50px;
+   margin-top: 10px;
 }
 
 #stateScreen{
@@ -38,11 +39,13 @@
    justify-content: center;
    align-items: center;
    height: 100vh;
-   gap: 25px;
+   gap: 10px;
 }
 
 #gameScreen{
    display: none;
+   justify-content: space-between;
+   width: 700px;
 }
 
 #log {

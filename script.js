@@ -35,12 +35,12 @@ let state = {
         pokemonId: 0,
         name: "enemy",
         attack: 0,
-        hp: 10,
-        maxHP: 10,
+        hp: 0,
+        maxHP: 0,
         level: 1,
         ability: null
     }],
-    turn: 0,
+    turn: 1,
     logs: [],
     phase: "player",
     isGameOver: false
@@ -101,7 +101,7 @@ async function defeatRewards(state) {
     const newStates = {
         ...state,
         players: state.players.map(p => {
-            if (p.id === 1 && p.exp <= 100) {
+            if (p.id === 1 && p.exp <= 100 ) {
                 return {
                     ...p,
                     exp: p.exp + 50,
@@ -140,8 +140,6 @@ async function playerLevelUP(state) {
     return state;
 }
 
-
-
 async function spawnEnemy(state) {
     if (state.players[1].hp <= 0) {
         const pokemon = await getPokemon();
@@ -171,7 +169,7 @@ async function spawnEnemy(state) {
 
 async function item(state) {
     const player = state.players.find(p => p.id === 1);
-    if (player.defeat % 10 === 0) {
+    if (player.defeat % 10 === 0 && player.defeat >= 1) {
         const potion = {
             ...state,
             players: state.players.map(p => {
@@ -413,7 +411,7 @@ async function addLog(state, message) {
    const logsArea = document.getElementById("log");
    p.dataset.turn = state.turn;
    if (logsArea.lastElementChild && logsArea.lastElementChild.dataset.turn != state.turn) {
-    logsArea.innerHTML = "";
+       logsArea.innerHTML = "";
    }
    
    
@@ -433,7 +431,7 @@ function gameOver() {
 
 function gameState() {
     document.getElementById("stateScreen").style.display = "none";
-    document.getElementById("gameScreen").style.display = "block";
+    document.getElementById("gameScreen").style.display = "flex";
 }
 
 function textChange() {
@@ -506,6 +504,7 @@ powerBeans.addEventListener('click', async () => {
     setState(await usePowerBeans(state));
 })
 
-stateButton.addEventListener('click', () => {
+stateButton.addEventListener('click', async () => {
     gameState();
+    setState(await spawnEnemy(state));
 });
