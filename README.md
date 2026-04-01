@@ -3,7 +3,7 @@
 javaScriptで作ったターン制バトルゲーム
 
 ## Play Game
-https://bokuchin0126-coder.github.io/battle-game-rebuild/
+https://bokuchin0126-coder.github.io/pokemon-battle-js-original/
 
 ## Demo
 
