@@ -9,31 +9,24 @@ https://bokuchin0126-coder.github.io/battle-game-rebuild/
 
 ![game screen](screenshot.png.png)
 
-## Game Features
-・Turn based battle system
-・Random Pokemon generation (PokeAPI)
-・Level up system
-・Boss battle (10 / 20 / 30 defeats)
-・Item system (HealPotion / Power Beans)
-
 ## 機能
-・ランダムポケモン生成（PokeAPI）
-・ターン制バトル
-・GameOver / GameClear
-・レベルアップシステム
-・ボス戦（10 / 20 / 30体目）
-・HP管理
-・アイテム（回復ポーション / 力の豆）
-・ログ表示
+- ランダムポケモン生成（PokeAPI）
+- ターン制バトル
+- GameOver / GameClear
+- レベルアップシステム
+- ボス戦（10 / 20 / 30体目）
+- HP管理
+- アイテム（回復ポーション / 力の豆）
+- ログ表示
 
 ## 使用技術
-・HTML
-・CSS
-・JavaScript
-・PokeAPI
+- HTML
+- CSS
+- JavaScript
+- PokeAPI
 
 ## ゲームルール
-・敵を倒すと経験値を獲得
-・レベルアップでHPを攻撃力が上昇
-・一定撃破数でアイテム取得
-・30体倒すとゲームクリア
+- 敵を倒すと経験値を獲得
+- レベルアップでHPを攻撃力が上昇
+- 一定撃破数でアイテム取得
+- 30体倒すとゲームクリア
